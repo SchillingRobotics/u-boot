@@ -148,6 +148,12 @@ int dram_init_banksize(void)
 
 static void do_board_detect(void)
 {
+	// Force the DTS node board to be type EV23X71A
+	gd->board_type = BOARD_TYPE_EV23X71A;
+    return;
+
+	// Original code below.....
+
 	u32 val;
 
 	/* CPU_BUILDID != 0 on FPGA */
@@ -248,27 +254,29 @@ static int lan969x_ev23x71a_board_init(void)
 
 	/* Release the reset of the PHYs, for the lan8814 PHYs.
 	 * For the lan8840 PHY, it gets out of reset when chip gets out
-	 * of reset
+	 * of reset.
+	 * 
+	 * GPIO 7 is used as PHY reset (active-low) on the DTS node board.
 	 */
-	val = in_le32(GCB_GPIO_ALT1(LAN969X_GCB_BASE, 0));
-	val &= ~BIT(62 - 32);
-	out_le32(GCB_GPIO_ALT1(LAN969X_GCB_BASE, 0), val);
+	val = in_le32(GCB_GPIO_ALT(LAN969X_GCB_BASE, 0));
+	val &= ~BIT(7);
+	out_le32(GCB_GPIO_ALT(LAN969X_GCB_BASE, 0), val);
 
-	val = in_le32(GCB_GPIO_ALT1(LAN969X_GCB_BASE, 1));
-	val &= ~BIT(62 - 32);
-	out_le32(GCB_GPIO_ALT1(LAN969X_GCB_BASE, 1), val);
+	val = in_le32(GCB_GPIO_ALT(LAN969X_GCB_BASE, 1));
+	val &= ~BIT(7);
+	out_le32(GCB_GPIO_ALT(LAN969X_GCB_BASE, 1), val);
 
-	val = in_le32(GCB_GPIO_ALT1(LAN969X_GCB_BASE, 2));
-	val &= ~BIT(62 - 32);
-	out_le32(GCB_GPIO_ALT1(LAN969X_GCB_BASE, 2), val);
+	val = in_le32(GCB_GPIO_ALT(LAN969X_GCB_BASE, 2));
+	val &= ~BIT(7);
+	out_le32(GCB_GPIO_ALT(LAN969X_GCB_BASE, 2), val);
 
-	val = in_le32(GCB_GPIO_OE1(LAN969X_GCB_BASE));
-	val |= BIT(62 - 32);
-	out_le32(GCB_GPIO_OE1(LAN969X_GCB_BASE), val);
+	val = in_le32(GCB_GPIO_OE(LAN969X_GCB_BASE));
+	val |= BIT(7);
+	out_le32(GCB_GPIO_OE(LAN969X_GCB_BASE), val);
 
-	val = in_le32(GCB_GPIO_OUT_SET1(LAN969X_GCB_BASE));
-	val |= BIT(62 - 32);
-	out_le32(GCB_GPIO_OUT_SET1(LAN969X_GCB_BASE), val);
+	val = in_le32(GCB_GPIO_OUT_SET(LAN969X_GCB_BASE));
+	val |= BIT(7);
+	out_le32(GCB_GPIO_OUT_SET(LAN969X_GCB_BASE), val);
 
 	return 0;
 }

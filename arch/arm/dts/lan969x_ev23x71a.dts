@@ -54,18 +54,18 @@
 	pinctrl-names = "default";
 	status = "okay";
 
-	phy3: phy@3 {
-		reg = <3>;
+	phy10: phy@10 {
+		reg = <10>;
 	};
 };
 
 &switch {
 	status = "okay";
 	ethernet-ports {
-		port29: port@29 {
-			reg = <29>;
-			phy-handle = <&phy3>;
-			phys = <IF_RGMII>;
+		port10: port@10 { // physical port 7
+			reg = <10>;
+			phy-handle = <&phy10>;
+			phys = <IF_QSGMII FA_SERDES_TYPE_10G 2>;
 		};
 	};
 };

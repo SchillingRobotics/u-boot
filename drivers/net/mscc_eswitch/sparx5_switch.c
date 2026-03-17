@@ -880,6 +880,7 @@ static int sparx5_start(struct udevice *dev)
 	struct sparx5_private *priv = dev_get_priv(dev);
 	struct eth_pdata *pdata = dev_get_plat(dev);
 	int i, ret, phy_ok = 0, ret_err = 0;
+	u32 speed_sel;
 
 	/* Set MAC address tables entries for CPU redirection */
 	ret = sparx5_mac_table_add(priv, mac, PGID_BROADCAST(priv));
@@ -905,13 +906,33 @@ static int sparx5_start(struct udevice *dev)
 			ret_err = ret;
 			continue; /* try all phys */
 		} else {
+			// Update MAC clock speed selector to the resolved copper speed
+			switch (phy->speed) {
+			case SPEED_10:
+				speed_sel = 0;
+				break;
+			case SPEED_100:
+				speed_sel = 1;
+				break;
+			case SPEED_1000:
+			default:
+				speed_sel = 2;
+				break;
+			}
+
+			spx5_rmw(DEV2G5_DEV_RST_CTRL_SPEED_SEL_SET(speed_sel),
+				 DEV2G5_DEV_RST_CTRL_SPEED_SEL,
+				 priv, DEV2G5_DEV_RST_CTRL(i));
+
 			phy_ok = 1;
 			if (i == priv->data->npi_port)
 				printf("NPI Port: ");
 			else
 				printf("Port %3d: ", i);
 
-			printf("%s (internal)\n", sparx5_port_has_link(priv, i) ? "Up" : "Down");
+			printf("%s (internal), phy_speed=%d phy_duplex=%d mac_speed_sel=%u\n",
+			       sparx5_port_has_link(priv, i) ? "Up" : "Down",
+			       phy->speed, phy->duplex, speed_sel);
 		}
 
 		sparx5_port_init(priv, i);
